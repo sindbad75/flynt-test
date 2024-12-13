@@ -37,6 +37,11 @@ export function CreateRecipesForm(): JSX.Element {
       return;
     }
 
+    if (!hasStarch) {
+      alert("Please add a starch");
+      return;
+    }
+
     await createRecipe({
       name,
       timeToCook,
@@ -53,6 +58,24 @@ export function CreateRecipesForm(): JSX.Element {
   if (isLoading) {
     return <Loader />;
   }
+
+  const withProteinIngredientsIds = ingredients.reduce((acc: number[], curr: Ingredient) => {
+    if (curr.tag === "protein") {
+      acc.push(curr.id)
+    }
+    return acc
+  }, [] as number[])
+
+  const withStarchIngredientsIds = ingredients.reduce((acc: number[], curr: Ingredient) => {
+    if (curr.tag === "starch") {
+      acc.push(curr.id)
+    }
+    return acc
+  }, [] as number[])
+
+  const hasProtein = !!selectedIngredients.find(ingredient => withProteinIngredientsIds.includes(ingredient.id))
+
+  const hasStarch = !!selectedIngredients.find(ingredient => withStarchIngredientsIds.includes(ingredient.id))
 
   return (
     <div id="create-recipes-form">
@@ -85,6 +108,15 @@ export function CreateRecipesForm(): JSX.Element {
               options={ingredients.map((e: Ingredient) => {
                 return { label: e.name, id: e.id };
               })}
+              getOptionDisabled={(option) => {
+                if (withProteinIngredientsIds.includes(option.id) && hasProtein) {
+                  return true
+                }
+                if (withStarchIngredientsIds.includes(option.id) && hasStarch) {
+                  return true
+                }
+                return false
+              }}
               renderInput={(params: any) => (
                 <TextField {...params} label="Ingredients" />
               )}
