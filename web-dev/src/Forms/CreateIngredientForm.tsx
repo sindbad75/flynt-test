@@ -1,13 +1,17 @@
-import { Box, Button, FormControl, TextField } from "@mui/material";
+import { Autocomplete, Box, Button, FormControl, TextField } from "@mui/material";
 import { useState } from "react";
 import { CardCustom } from "../Components/CardCustom";
 import { useMutationIngredientCreate } from "../Hooks/Mutation/IngredientsMutation";
+import { IngredientTag } from "../Types/Ingredient"
 
 export function CreateIngredientForm(): JSX.Element {
   const { mutateAsync: createIngredient } = useMutationIngredientCreate();
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState<number>(0);
+  const [selectedTag, setSelectedTag] = useState<
+    IngredientTag
+    >("" as IngredientTag);
 
   const resetFields = () => {
     setName("");
@@ -15,13 +19,14 @@ export function CreateIngredientForm(): JSX.Element {
   };
 
   const handlerSubmitNewIngredient = async () => {
-    if (name === undefined || name === "" || price === undefined) {
+    if (name === undefined || name === "" || price === undefined || !selectedTag) {
       alert("Please fill all the fields");
       return;
     }
     await createIngredient({
       name,
       price,
+      tag: selectedTag,
     });
 
     resetFields();
@@ -63,7 +68,19 @@ export function CreateIngredientForm(): JSX.Element {
               multiplied by the number of people in the recipe.
             </span>
           </FormControl>
-
+          <FormControl fullWidth margin="normal">
+            <Autocomplete
+              onChange={(_e, value) => { // type issue: to improve
+                setSelectedTag(value as IngredientTag);
+              }}
+              value={selectedTag}
+              id="combo-box-demo"
+              options={["vegetable" , "protein" , "starch"]}
+              renderInput={(params: any) => (
+                <TextField {...params} label="Tag" />
+              )}
+            />
+          </FormControl>
           <FormControl margin="normal">
             <Button onClick={handlerSubmitNewIngredient} variant="contained">
               Submit
