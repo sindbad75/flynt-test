@@ -75,7 +75,7 @@ export function CreateIngredientForm(): JSX.Element {
               }}
               value={selectedTag}
               id="combo-box-demo"
-              options={["vegetable" , "protein" , "starch"]}
+              options={["vegetable" , "protein" , "starch"]} // console warning to be fixed
               renderInput={(params: any) => (
                 <TextField {...params} label="Tag" />
               )}

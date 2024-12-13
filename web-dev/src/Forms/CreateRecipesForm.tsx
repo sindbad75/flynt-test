@@ -108,6 +108,7 @@ export function CreateRecipesForm(): JSX.Element {
               options={ingredients.map((e: Ingredient) => {
                 return { label: e.name, id: e.id };
               })}
+              isOptionEqualToValue={(option, value) => option.id === value.id} // fix console warning
               getOptionDisabled={(option) => {
                 if (withProteinIngredientsIds.includes(option.id) && hasProtein) {
                   return true
