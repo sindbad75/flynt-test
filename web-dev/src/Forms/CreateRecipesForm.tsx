@@ -11,10 +11,11 @@ import { Loader } from "../Components/Loader";
 import { useMutationRecipeCreate } from "../Hooks/Mutation/RecipeMutation";
 import { useQueryIngredientList } from "../Hooks/Query/IngredientQuery";
 import { ErrorPage } from "../Pages/ErrorPage";
-import { Ingredient } from "../Types/Ingredient";
+import { Ingredient, IngredientTag } from "../Types/Ingredient";
+import { Recipe } from "../Types/Recipe";
 import { OptionsMultiSelectType } from "../Types/OptionsMultiSelect";
 
-export function CreateRecipesForm(): JSX.Element {
+export function CreateRecipesForm({ recipes }: { recipes: Recipe[] }): JSX.Element {
   const [name, setName] = useState("");
   const [timeToCook, setTimeToCook] = useState<number>(0);
   const [numberOfPeople, setNumberOfPeople] = useState<number>(0);
@@ -59,19 +60,29 @@ export function CreateRecipesForm(): JSX.Element {
     return <Loader />;
   }
 
-  const withProteinIngredientsIds = ingredients.reduce((acc: number[], curr: Ingredient) => {
-    if (curr.tag === "protein") {
-      acc.push(curr.id)
-    }
-    return acc
-  }, [] as number[])
+  function getIngredientsIdsFromListAndTag(ingredients: Ingredient[], tag: IngredientTag) {
+   return ingredients.reduce((acc: number[], curr: Ingredient) => {
+      if (curr.tag === tag) {
+        acc.push(curr.id)
+      }
+      return acc
+    }, [] as number[]) 
+  }
 
-  const withStarchIngredientsIds = ingredients.reduce((acc: number[], curr: Ingredient) => {
-    if (curr.tag === "starch") {
-      acc.push(curr.id)
+  // recipes
+  const alreadyUsedProteinIngredientsIds = recipes.reduce((acc: number[], curr: Recipe) => {
+    const withProteinIngredientsIds = getIngredientsIdsFromListAndTag(curr.ingredients, "protein")
+    if (withProteinIngredientsIds.length === 1) { // to only handle valid recipes
+      acc.push(withProteinIngredientsIds[0])
     }
     return acc
   }, [] as number[])
+  
+
+  // ingredients
+  const withProteinIngredientsIds = getIngredientsIdsFromListAndTag(ingredients, "protein")
+
+  const withStarchIngredientsIds = getIngredientsIdsFromListAndTag(ingredients, "starch")
 
   const hasProtein = !!selectedIngredients.find(ingredient => withProteinIngredientsIds.includes(ingredient.id))
 
@@ -110,6 +121,9 @@ export function CreateRecipesForm(): JSX.Element {
               })}
               isOptionEqualToValue={(option, value) => option.id === value.id} // fix console warning
               getOptionDisabled={(option) => {
+                if (alreadyUsedProteinIngredientsIds.includes(option.id)) {
+                  return true
+                }
                 if (withProteinIngredientsIds.includes(option.id) && hasProtein) {
                   return true
                 }
